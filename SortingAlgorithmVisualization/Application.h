@@ -18,20 +18,15 @@ class Application
 		void handleEvents();
 
 	private:
-		std::tuple<int, int> promptUser();
-		int selectSortAlgorithm();
-
-		static const sf::Time timePerFrame;
-		sf::RenderWindow mWindow;
-
-		Sorter sorter;
-		std::vector<Rectangle> sortingArray;
-		Renderer renderer;
-
-		std::thread appThread;
 
 		void getUserInput();
 
+		std::vector<Rectangle> sortingArray;
+		Sorter sorter;
+		Renderer renderer;
+
+		std::thread appThread;
+		sf::RenderWindow mWindow;
 		std::atomic<bool> endProgram;
 };
 

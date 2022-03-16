@@ -2,9 +2,11 @@
 #include <thread>
 #include <iostream>
 
-Sorter::Sorter(std::vector<Rectangle>& arr) :
-	sortingArray(arr),
-	sortingThread{}
+Sorter::Sorter(std::vector<Rectangle>& arr) 
+	: sortingArray{ arr }
+	, delay{ 0 }
+	, algoChoice{ -1 }
+	, sortingThread{}
 {
 }
 
@@ -22,7 +24,8 @@ void Sorter::shuffleArray(std::vector<Rectangle>& arr, int size)
 			sf::Vector2f(0.0, 0.0), 
 			sf::Color::Red, 
 			sf::Color::White, 
-			false
+			false,
+			sf::milliseconds(30)
 		);
 		arr.push_back(rectangle);
 	}
@@ -40,6 +43,9 @@ void Sorter::shuffleArray(std::vector<Rectangle>& arr, int size)
 
 void Sorter::shuffleArray(int size)
 {
+	// Do not use clear(). It invalidates any references, pointers, or iterators to the elements within it.
+	// Reserver() also invalidates references, pointers, and iterators to the elements if the parameter "size" is greater 
+	// than its current capacity. SortingArray reallocates to a new location in memory.
 	sortingArray.clear();
 	sortingArray.reserve(size);
 
@@ -52,10 +58,11 @@ void Sorter::shuffleArray(int size)
 			sf::Vector2f(0.0, 0.0),
 			sf::Color::Red,
 			sf::Color::White,
-			false
+			false,
+			sf::milliseconds(30)
 		);
 		sortingArray.push_back(rectangle);
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 	}
 
 	// Shuffle
@@ -66,18 +73,13 @@ void Sorter::shuffleArray(int size)
 		Rectangle temp = sortingArray[i];
 		sortingArray[i] = sortingArray[j];
 		sortingArray[j] = temp;
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 	}
-
-	//std::cout << &sortingArray;
 }
 
 void Sorter::selectSortAlgo(int choice)
 {
 	algoChoice = choice;
-	/*for (auto& elem : sortingArray) {
-		std::cout << elem.getValue() << " ";
-	}*/
 }
 
 void Sorter::startSortAlgo()
@@ -85,7 +87,8 @@ void Sorter::startSortAlgo()
 	enum sortingAlgorithms {
 		BubbleSort = 1,
 		InsertionSort,
-		SelectionSort
+		SelectionSort,
+		QuickSort
 	};
 
 	isSorted = false;
@@ -93,19 +96,20 @@ void Sorter::startSortAlgo()
 	{
 	case BubbleSort:
 	{
-		// Dedicate a thread to bubble sorting
-		//std::thread t1{ &Sorter::testfunc, this, 100 };
-		//std::thread t1{ testfunc, std::ref(sortingArray), 1 };
-		//sortingThread = std::thread{ &Sorter::bubbleSort, this, 100 };
-		//t1.join();
-		bubbleSort(5);
+		bubbleSort(delay);
 		break;
 	}
-	/*case InsertionSort:
-		return std::thread{ insertionSort, std::ref(arr), 3000 };
+	case InsertionSort:
+		insertionSort(delay);
+		break;
 	case SelectionSort:
-		return std::thread{ selectionSort, std::ref(arr), 1 };*/
+		selectionSort(delay);
+		break;
+	case QuickSort:
+		quickSort(0, sortingArray.size() - 1, delay);
+		break;
 	default:
+		std::cout << "An algorithm was not selected.\n";
 		break;
 	}
 }
@@ -119,6 +123,11 @@ bool Sorter::checkIfSorted()
 	else {
 		return false;
 	}
+}
+
+void Sorter::setDelay(int timeInMs)
+{
+	delay = timeInMs;
 }
 
 void Sorter::testfunc(int iWaitTime) {
@@ -137,24 +146,84 @@ void Sorter::bubbleSort(int delay)
 {
 	int n = sortingArray.size();
 	bool swapped = false;
-	//printArray();
-	//std::cout << &sortingArray;
 	do {
 		swapped = false;
 		for (int i = 1; i < n; i++) {
 			if (sortingArray[i] < sortingArray[i - 1]) {
+				swap(&sortingArray[i], &sortingArray[i - 1]);
 				sortingArray[i].setActive();
 				sortingArray[i - 1].setActive();
-				//std::cout << sortingArray[i].getValue() << " " << sortingArray[i - 1].getValue() << std::endl;
-				// For some reason, swap is not swapping the array. 
-				swap(&sortingArray[i], &sortingArray[i - 1]);
 				swapped = true;
 				std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 			}
 		}
 	} while (swapped == true);
+}
 
-	//printArray();
+void Sorter::insertionSort(int delay)
+{
+}
+
+void Sorter::quickSort(int low, int hi, int delay)
+{
+	if (low < hi) {
+		int pi = partition(low, hi, delay);
+		quickSort(low, pi - 1, delay);
+		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+		quickSort(pi + 1, hi, delay);
+		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+	}
+}
+
+void Sorter::selectionSort(int delay)
+{
+	//int i, key, j;
+	//for (i = 1; i < arr.size(); i++)
+	//{
+	//	key = arr[i].iValue;
+	//	j = i - 1;
+
+	//	/* Move elements of arr[0..i-1], that are
+	//	greater than key, to one position ahead
+	//	of their current position */
+	//	while (j >= 0 && arr[j].iValue > key)
+	//	{
+	//		arr[j + 1].setActive(true);
+	//		//arr[j + 1].iValue = arr[j].iValue;
+	//		swap(&arr[j + 1], &arr[j]);
+	//		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+	//		//setWhite(arr[j + 1], arr[j]);
+	//		setWhite(arr[j + 1]);
+	//		setWhite(arr[j]);
+	//		j = j - 1;
+	//	}
+	//	arr[j + 1].iValue = key;
+	//}
+}
+
+int Sorter::partition(int low, int hi, int delay)
+{
+	Rectangle pivot = sortingArray[hi];					 // Select rightmost element as pivot
+	int i = (low - 1);								// Pointer for greater element
+
+	for (int j = low; j < hi; j++) {
+		if (sortingArray[j] <= pivot) {
+			i++;
+			swap(&sortingArray[i], &sortingArray[j]);
+			sortingArray[i].setActive();
+			sortingArray[j].setActive();
+			std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+
+		}
+	}
+
+	swap(&sortingArray[i + 1], &sortingArray[hi]);
+	sortingArray[i+1].setActive();
+	sortingArray[hi].setActive();
+	std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+
+	
+	return (i + 1);
 }
 
 void Sorter::printArray()
@@ -169,65 +238,10 @@ void Sorter::swap(Rectangle* a, Rectangle* b)
 {
 	// Switch positions of a and b in array
 	Rectangle temp = *a;
-	/*sf::Vector2f aCoords = a->getPosition();
-	sf::Vector2f bCoords = b->getPosition();*/
-	// Research how to swap pointers of elems in array
-	// The param of a is of type Rectangle*, but when we are swapping a and b, we need to swap **a and **b. What does ** mean?
 	*a = *b;
 	*b = temp;
 
-	// Swap coords of a and b
 	sf::Vector2f tempCoords = a->getPosition();
 	a->setPosition(b->getPosition());
 	b->setPosition(tempCoords);
 }
-
-//bool bubbleSort(std::vector<Rectangle>& vecInput, int iWaitTime)
-//{
-//	int iSize = vecInput.size();
-//	// Bubble sort has runtime of O(n^2)
-//	bool bswapped = false;
-//	// If it does a full pass through the array without swapping, end this loop
-//	//ArrClass firstObject = vecInput[0];
-//	//ArrClass secondObject = vecInput[0];
-//	ArrClass* aPointer = &vecInput[0];
-//	ArrClass* aPointer2 = &vecInput[0];
-//	do
-//	{
-//		bswapped = false;
-//		// Loop through the array
-//		for (int i = 1; i < iSize; i++)
-//		{
-//			/*int* a = &arrInput[i];
-//			int* b = &arrInput[i-1];*/
-//
-//			// Check if the pair is not in order.
-//			if (vecInput[i].iValue < vecInput[i - 1].iValue)
-//			{
-//				std::this_thread::sleep_for(std::chrono::milliseconds(iWaitTime));
-//				// Perform swap since they are not in order
-//				// Save a pointer to both vecInputs so that we can turn them white when needed
-//				/*setWhite(&firstObject, &secondObject);*/
-//				/*std::cout << "Before the swap" << std::endl;
-//				std::cout << &vecInput[i] << " " << aPointer << std::endl;
-//				std::cout << &vecInput[i - 1] << " " << aPointer2 << std::endl;*/
-//				/*aPointer->setActive(false);
-//				aPointer2->setActive(false);*/
-//				//setWhite(aPointer, aPointer2);
-//				swap(&vecInput[i], &vecInput[i - 1]);
-//				bswapped = true;
-//				//std::cout << "After the swap" << std::endl;
-//				aPointer = &vecInput[i];
-//				aPointer2 = &vecInput[i - 1];
-//				/*std::cout << &vecInput[i] << " " << aPointer << std::endl;
-//				std::cout << &vecInput[i - 1] << " " << aPointer2 << std::endl;*/
-//			}
-//			//PrintContents(arrInput, 10, bswapped);
-//		}
-//
-//	} while (bswapped == true);
-//	//setWhite(aPointer, aPointer2);
-//
-//	std::cout << "successfully sorted\n";
-//	return true;
-//}

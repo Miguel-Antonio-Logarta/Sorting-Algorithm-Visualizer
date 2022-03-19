@@ -6,6 +6,7 @@
 class Rectangle : public sf::Drawable
 {
 	public:
+		Rectangle();
 		Rectangle(int value, sf::Vector2f size, sf::Vector2f position, sf::Color activeColor, sf::Color inactiveColor, bool active, sf::Time transitionTime);
 		void update();
 		

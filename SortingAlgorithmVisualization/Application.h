@@ -6,9 +6,6 @@
 #include <iostream>
 #include <atomic>
 
-// Application keeps track of the window, game state, sorter, array, etc...
-// Renderer draws and renders on the screen
-// Sorter handles the sorting of the array
 class Application
 {
 	public:
@@ -20,6 +17,7 @@ class Application
 	private:
 
 		void getUserInput();
+		void runRenderer();
 
 		std::vector<Rectangle> sortingArray;
 		Sorter sorter;

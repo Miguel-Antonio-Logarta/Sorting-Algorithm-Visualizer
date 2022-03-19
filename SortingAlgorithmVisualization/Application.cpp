@@ -1,10 +1,10 @@
 #include "Application.h"
 
 Application::Application() 
-	: mWindow(sf::VideoMode(1280, 720), "Sorting Algorithm Visualizer")
-	, sorter(sortingArray)
-	, renderer(sortingArray, mWindow)
-	, endProgram(false)
+	: mWindow{ sf::VideoMode(1280, 720), "Sorting Algorithm Visualizer" }
+	, sorter{ sortingArray }
+	, renderer{ sortingArray, mWindow }
+	, endProgram{ false }
 {
 	mWindow.setFramerateLimit(60);
 }
@@ -16,13 +16,7 @@ void Application::run()
 	while (mWindow.isOpen() && !endProgram.load())
 	{
 		handleEvents();
-
 		mWindow.clear();
-
-		for (auto& rectangle : sortingArray) {
-			rectangle.update();
-		}
-
 		renderer.drawRectangles();
 		mWindow.display();
 	}
@@ -37,38 +31,27 @@ void Application::handleEvents()
 		switch (evnt.type)
 		{
 
-		case sf::Event::Closed:
-			mWindow.close();
-			break;
-			// Keyboard events down here
-		//case sf::Event::KeyPressed:
-		//	if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
-		//	{
-		//		// Pause the sort
-		//		std::cout << "P is pressed\n";
-		//	}
-		//	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-		//	{
-		//		// Lower the delay between each array action
-		//		std::cout << "Left is pressed";
-		//	}
-		//	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-		//	{
-		//		// Increase the delay between each array action
-		//		std::cout << "Right is pressed";
-		//	}
-		//	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
-		//	{
-		//		// Just complete the array sort without delay
-		//		std::cout << "Enter is pressed";
-		//	}
-		//	break;
-		case sf::Event::Resized:
-			std::cout << "I have been resized!";
-
-			break;
-		default:
-			break;
+			case sf::Event::Closed:
+			{
+				mWindow.close();
+				break;
+			}
+			case sf::Event::Resized:
+			{
+				sf::FloatRect visibleArea(
+					0.0f,
+					0.0f,
+					static_cast<float>(evnt.size.width),
+					static_cast<float>(evnt.size.height)
+				);
+				mWindow.setView(sf::View(visibleArea));
+				renderer.calculateRectSizes();
+				break;
+			}
+			default:
+			{
+				break;
+			}
 		}
 
 	}
@@ -76,43 +59,69 @@ void Application::handleEvents()
 
 void Application::getUserInput()
 {
-	// Find a way to clear the console so that the console is clean.
 	std::cout << "Welcome to my sorting algorithm visualizer!" << "\n";
-	renderer.setToRender(true);
 
 	while (true) {
-		sorter.setDelay(0);
+		renderer.setRecalculateRectSizes(true);
+
 		int amount{ 0 };
 		int choice{ 0 };
 		std::cout << "Enter the number of items to sort: ";
 		std::cin >> amount;
+		sorter.setDelay(5);
 		sorter.shuffleArray(amount);
 
 		std::cout << "Enter the number corresponding to the sorting algorithm you want to use: \n";
 		std::cout
-			<< "0: Exit program"	<< "\n"
-			<< "1: Bubble Sort"		<< "\n"
-			<< "2: Insertion Sort"	<< "\n"
-			<< "3: Selection Sort"	<< "\n"
-			<< "4: Quick Sort"		<< "\n"
+			<< "0: Exit program"				<< "\n"
+			<< "1: Bubble Sort	   O(n^2)"		<< "\n"
+			<< "2: Insertion Sort  O(n^2)"		<< "\n"
+			<< "3: Selection Sort  O(n^2)"		<< "\n"
+			<< "4: Quick Sort      O(nlog(n))"	<< "\n"
+			<< "5: Merge Sort      O(nlog(n))"	<< "\n"
+			<< "6: Heap Sort       O(nlog(n))"	<< "\n"
+			<< "7: Counting Sort   O(n+k)"		<< "\n"
+			<< "8: Radix Sort      O(nk)"		<< "\n"
 			<< "Your choice: ";
 		std::cin >> choice;
 
-		sorter.setDelay(5);
 		if (!choice) {			// Exit the program
 			endProgram = true;
 			std::cout << "Exiting program";
 			break;
 		}
 		
-		renderer.setToRender(false);
-		
+		sorter.setDelay(30);
+		renderer.setRecalculateRectSizes(false);
 		sorter.selectSortAlgo(choice);
-		
 		sorter.startSortAlgo();
 
 		std::cout << "Sorting has finished \n";
-		renderer.setToRender(true);
 
+	}
+
+	/*std::cout << "Welcome to my sorting algorithm visualizer!" << "\n";
+	std::cout << "Sorting Algorithm: " << "Array length: " << ", Delay: ";
+	std::cout << "Select an option:\n";
+	std::cout
+		<< "0: Exit program"		<< "\n"
+		<< "1: Adjust array length" << "\n"
+		<< "2: Adjust delay"		<< "\n"
+		<< "3: Bubble Sort"			<< "\n"
+		<< "4: Insertion Sort"		<< "\n"
+		<< "5: Selection Sort"		<< "\n"
+		<< "6: Quick Sort"			<< "\n"
+		<< "Your choice: ";*/
+}
+
+void Application::runRenderer()
+{
+	mWindow.setActive(true);
+	while (mWindow.isOpen() && !endProgram.load())
+	{
+		handleEvents();
+		mWindow.clear();
+		renderer.drawRectangles();
+		mWindow.display();
 	}
 }

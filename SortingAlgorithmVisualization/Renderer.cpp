@@ -4,6 +4,7 @@ Renderer::Renderer(std::vector<Rectangle>& arr, sf::RenderWindow& mWindow)
 	: arrRef(arr)
 	, windowRef(mWindow)
 	, calculatetherect(true)
+	, recalculateRectSizes(false)
 {
 }
 
@@ -20,7 +21,8 @@ void Renderer::calculateRectSizes()
 		float windowWidth = (float)windowSize.x;
 		float windowHeight = (float)windowSize.y;
 
-		float fHeight = ((windowHeight - 2 * iMargins) / (float)iArrayMax) * ((float)arrRef[i].getValue());		// (max window size w/ margins) / (MaxVal*elementVal)
+		// (max window size w/ margins) / (MaxVal*elementVal)
+		float fHeight = ((windowHeight - 2 * iMargins) / (float)iArrayMax) * ((float)arrRef[i].getValue());		
 		float fWidth = (windowWidth - 2 * iMargins) / (float)iSize;
 		float fXPos = i * fWidth + iMargins;
 		float fYPos = windowHeight - iMargins;
@@ -29,28 +31,26 @@ void Renderer::calculateRectSizes()
 		arrRef[i].setSize(sf::Vector2f(fWidth, fHeight));
 		arrRef[i].setPosition(sf::Vector2f(fXPos, fYPos));
 	}
-
-	// Issue: Both size and position is not mapping right. 
-	// When the window is smaller, the rectangles end up being too small. 
-	// When the window is bigger, the rectangles end up being too big
 }
 
 void Renderer::drawRectangles()
 {
-	// drawRectangles doesn't have to be called on every render. Only on resize is it needed.
-	if (calculatetherect) {
+	if (recalculateRectSizes) {
 		calculateRectSizes();
 	}
 
 	for (auto& rectangle : arrRef) {
+		mtx.lock();
 		rectangle.update();
+		mtx.unlock();
+
 		windowRef.draw(rectangle);
 	}
 }
 
-void Renderer::setToRender(bool condition)
+void Renderer::setRecalculateRectSizes(bool condition)
 {
-	calculatetherect = condition;
+	recalculateRectSizes = condition;
 }
 
 void Renderer::Resize()

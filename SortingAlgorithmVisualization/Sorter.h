@@ -2,21 +2,24 @@
 #include "Rectangle.h"
 #include <vector>
 #include <cstddef>
+#include <chrono>
+#include <mutex>
 
 class Sorter
 {
 	public:
-		Sorter(std::vector<Rectangle>& arr);
+		Sorter();
 
-		void shuffleArray(int size);
+		void shuffleArray(std::vector<Rectangle>& arr, int size);
 		void selectSortAlgo(int choice);
-		void startSortAlgo();
+		void startSortAlgo(std::vector<Rectangle>& arr);
 		void setDelay(int timeInMs);
 
+
 	private:
-		std::vector<Rectangle>& sortingArray;
 		int algoChoice;
 		int delay;
+		std::mutex mtx;
 
 		// Sorts
 		void bubbleSort(std::vector<Rectangle>& arr);

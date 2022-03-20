@@ -1,59 +1,51 @@
 #include "Renderer.h"
 
-Renderer::Renderer(std::vector<Rectangle>& arr, sf::RenderWindow& mWindow) 
-	: arrRef(arr)
-	, windowRef(mWindow)
-	, calculatetherect(true)
-	, recalculateRectSizes(false)
+Renderer::Renderer()
+	: recalculateRectSizes(false)
 {
 }
 
-void Renderer::calculateRectSizes()
+void Renderer::calculateRectSizes(std::vector<Rectangle>& arr, sf::RenderWindow& mWindow)
 {
-	int iSize = arrRef.size();
+	int iSize = arr.size();
 	int iArrayMax = iSize;
 	int iMargins = 5;
-
+	
 	for (int i = 0; i < iSize; i++)
 	{
-		sf::Vector2u windowSize = windowRef.getSize();
+		sf::Vector2u windowSize = mWindow.getSize();
 
 		float windowWidth = (float)windowSize.x;
 		float windowHeight = (float)windowSize.y;
 
 		// (max window size w/ margins) / (MaxVal*elementVal)
-		float fHeight = ((windowHeight - 2 * iMargins) / (float)iArrayMax) * ((float)arrRef[i].getValue());		
+		float fHeight = ((windowHeight - 2 * iMargins) / (float)iArrayMax) * ((float)arr[i].getValue());
 		float fWidth = (windowWidth - 2 * iMargins) / (float)iSize;
 		float fXPos = i * fWidth + iMargins;
 		float fYPos = windowHeight - iMargins;
 
-		arrRef[i].setOrigin(sf::Vector2f(0, fHeight));
-		arrRef[i].setSize(sf::Vector2f(fWidth, fHeight));
-		arrRef[i].setPosition(sf::Vector2f(fXPos, fYPos));
+		arr[i].setOrigin(sf::Vector2f(0, fHeight));
+		arr[i].setSize(sf::Vector2f(fWidth, fHeight));
+		arr[i].setPosition(sf::Vector2f(fXPos, fYPos));
 	}
 }
 
-void Renderer::drawRectangles()
+void Renderer::drawRectangles(std::vector<Rectangle>& arr, sf::RenderWindow& mWindow)
 {
 	if (recalculateRectSizes) {
-		calculateRectSizes();
+		calculateRectSizes(arr, mWindow);
 	}
 
-	for (auto& rectangle : arrRef) {
+	for (auto& rectangle : arr) {
 		mtx.lock();
 		rectangle.update();
 		mtx.unlock();
 
-		windowRef.draw(rectangle);
+		mWindow.draw(rectangle);
 	}
 }
 
 void Renderer::setRecalculateRectSizes(bool condition)
 {
 	recalculateRectSizes = condition;
-}
-
-void Renderer::Resize()
-{
-	calculateRectSizes();
 }

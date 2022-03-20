@@ -9,19 +9,14 @@
 class Renderer
 {
 	public:
-		Renderer(std::vector<Rectangle>& arr, sf::RenderWindow& mWindow);
-		void drawRectangles();
+		Renderer();
+
+		void drawRectangles(std::vector<Rectangle>& arr, sf::RenderWindow& mWindow);
+		void calculateRectSizes(std::vector<Rectangle>& arr, sf::RenderWindow& mWindow);
 		void setRecalculateRectSizes(bool condition);
-		void calculateRectSizes();
 
 	private:
-		void Resize();
-
-		std::vector<Rectangle>& arrRef;
-		sf::RenderWindow& windowRef;
 		std::mutex mtx;
-
-		bool calculatetherect;
 		bool recalculateRectSizes;
 };
 

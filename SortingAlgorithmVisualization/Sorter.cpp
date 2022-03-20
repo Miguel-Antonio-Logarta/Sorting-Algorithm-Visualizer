@@ -2,17 +2,29 @@
 #include <thread>
 #include <iostream>
 
-Sorter::Sorter(std::vector<Rectangle>& arr) 
-	: sortingArray{ arr }
-	, delay{ 0 }
+Sorter::Sorter() 
+	: delay{ 5 }
 	, algoChoice{ -1 }
 {
 }
 
-void Sorter::shuffleArray(int size)
+void Sorter::selectSortAlgo(int choice)
 {
-	sortingArray.clear();
-	sortingArray.reserve(size);
+	algoChoice = choice;
+}
+
+void Sorter::setDelay(int timeInMs)
+{
+	delay = timeInMs;
+}
+
+void Sorter::shuffleArray(std::vector<Rectangle>& arr, int size)
+{
+	// Mutex does not help here.
+	//mtx.lock();
+	arr.clear();
+	arr.reserve(size);
+	//mtx.unlock();
 
 	// Generate array in order
 	for (int i = 0; i < size; i++)
@@ -26,7 +38,7 @@ void Sorter::shuffleArray(int size)
 			false,
 			sf::milliseconds(30)
 		);
-		sortingArray.push_back(rectangle);
+		arr.push_back(rectangle);
 		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 	}
 
@@ -35,19 +47,14 @@ void Sorter::shuffleArray(int size)
 	for (int i = size - 1; i > 0; i--)
 	{
 		int j = rand() % (i + 1);
-		Rectangle temp = sortingArray[i];
-		sortingArray[i] = sortingArray[j];
-		sortingArray[j] = temp;
+		Rectangle temp = arr[i];
+		arr[i] = arr[j];
+		arr[j] = temp;
 		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 	}
 }
 
-void Sorter::selectSortAlgo(int choice)
-{
-	algoChoice = choice;
-}
-
-void Sorter::startSortAlgo()
+void Sorter::startSortAlgo(std::vector<Rectangle>& arr)
 {
 	enum sortingAlgorithms {
 		BubbleSort = 1,
@@ -63,38 +70,33 @@ void Sorter::startSortAlgo()
 	switch (algoChoice)
 	{
 	case BubbleSort:
-		bubbleSort(sortingArray);
+		bubbleSort(arr);
 		break;
 	case InsertionSort:
-		insertionSort(sortingArray);
+		insertionSort(arr);
 		break;
 	case SelectionSort:
-		selectionSort(sortingArray);
+		selectionSort(arr);
 		break;
 	case QuickSort:
-		quickSort(sortingArray, 0, sortingArray.size() - 1);
+		quickSort(arr, 0, arr.size() - 1);
 		break;
 	case MergeSort:
-		mergeSort(sortingArray, 0, sortingArray.size() - 1);
+		mergeSort(arr, 0, arr.size() - 1);
 		break;
 	case HeapSort:
-		heapSort(sortingArray, sortingArray.size());
+		heapSort(arr, arr.size());
 		break;
 	case CountingSort:
-		countingSort(sortingArray);
+		countingSort(arr);
 		break;
 	case RadixSort:
-		radixSort(sortingArray);
+		radixSort(arr);
 		break;
 	default:
 		std::cout << "An algorithm was not selected.\n";
 		break;
 	}
-}
-
-void Sorter::setDelay(int timeInMs)
-{
-	delay = timeInMs;
 }
 
 void Sorter::bubbleSort(std::vector<Rectangle>& arr)

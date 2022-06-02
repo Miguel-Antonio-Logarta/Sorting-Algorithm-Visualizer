@@ -69,6 +69,8 @@ void Application::getUserInput()
 	sorter.setDelay(5);
 	sorter.shuffleArray(sortingArray, amount);
 
+	// Add more options to set delay.
+	// Have a second array that we switch to and back whenever the user allocates a new array.
 	std::cout << "Enter the number corresponding to the sorting algorithm you want to use: \n";
 	std::cout
 		<< "0: Exit program" << "\n"

@@ -20,11 +20,8 @@ void Sorter::setDelay(int timeInMs)
 
 void Sorter::shuffleArray(std::vector<Rectangle>& arr, int size)
 {
-	// Mutex does not help here.
-	//mtx.lock();
 	arr.clear();
 	arr.reserve(size);
-	//mtx.unlock();
 
 	// Generate array in order
 	for (int i = 0; i < size; i++)
@@ -107,34 +104,21 @@ void Sorter::bubbleSort(std::vector<Rectangle>& arr)
 		swapped = false;
 		for (int i = 1; i < n; i++) {
 			if (arr[i] < arr[i - 1]) {
-				arr[i].setActive();
-				arr[i - 1].setActive();
-				swap(&arr[i], &arr[i - 1]);
+				swap(arr[i], arr[i - 1], delay, true);
 				swapped = true;
-				std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 			}
 		}
 	} while (swapped == true);
 }
 
-void Sorter::insertionSort(std::vector<Rectangle>& arr)
+void Sorter::insertionSort(std::vector<Rectangle>& vec)
 {
-	int n = arr.size();
-	for (int i = 1; i < n; i++) {
-		Rectangle key = arr[i];
-		int j = i - 1;
-
-		while (j >= 0 && key < arr[j]) {
-			arr[j].setActive();
-			arr[j + 1].setActive();
-			arr[j + 1] = arr[j];
-			std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+	for (unsigned int i = 1; i < vec.size(); i++) {
+		int j = i;
+		while (j > 0 && vec[j - 1] > vec[j]) {
+			swap(vec[j], vec[j - 1], delay, true);
 			j--;
 		}
-
-		arr[j + 1].setActive();
-		arr[j + 1] = key;
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 	}
 }
 
@@ -143,9 +127,7 @@ void Sorter::quickSort(std::vector<Rectangle>& arr, int low, int hi)
 	if (low < hi) {
 		int pi = partition(arr, low, hi);
 		quickSort(arr, low, pi - 1);
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 		quickSort(arr, pi + 1, hi);
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 	}
 }
 
@@ -160,10 +142,7 @@ void Sorter::selectionSort(std::vector<Rectangle>& arr)
 			}
 		}
 
-		arr[i].setActive();
-		arr[minimumIndex].setActive();
-		swap(&arr[i], &arr[minimumIndex]);
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+		swap(arr[i], arr[minimumIndex], delay);
 	}
 }
 
@@ -187,10 +166,7 @@ void Sorter::heapSort(std::vector<Rectangle>& arr, int n)
 
 	// Heap sort
 	for (int i = n - 1; i >= 0; i--) {
-		arr[0].setActive();
-		arr[i].setActive();
-		swap(&arr[0], &arr[i]);
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+		swap(arr[0], arr[i], delay);
 		// Heapify root element to get highest element to the root again
 		heapify(arr, i, 0);
 	}
@@ -208,7 +184,7 @@ void Sorter::countingSort(std::vector<Rectangle>& arr)
 			max = arr[i].getValue();
 
 			arr[i].setActive();
-			std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+			sleep(delay);
 		}
 	}
 
@@ -221,7 +197,7 @@ void Sorter::countingSort(std::vector<Rectangle>& arr)
 		count[arr[i].getValue()]++;
 		
 		arr[i].setActive();
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+		sleep(delay);
 	}
 
 	// Store cumulative count of each element in array
@@ -238,7 +214,7 @@ void Sorter::countingSort(std::vector<Rectangle>& arr)
 		count[arr[i].getValue()]--;
 		
 		arr[i].setActive();
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+		sleep(delay);
 	}
 
 	// Copy the sorted elements into original array
@@ -246,7 +222,7 @@ void Sorter::countingSort(std::vector<Rectangle>& arr)
 		arr[i] = output[i];
 		
 		arr[i].setActive();
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+		sleep(delay);
 	}
 }
 
@@ -264,8 +240,6 @@ void Sorter::countingSort(std::vector<Rectangle>& arr, int place)
 	// Store the count of each element
 	for (std::size_t i = 0; i < arr.size(); i++) {
 		count[(arr[i].getValue() / place) % 10]++;
-		/*arr[i].setActive();
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));*/
 	}
 
 	// Store cumulative count of each element in array
@@ -280,15 +254,13 @@ void Sorter::countingSort(std::vector<Rectangle>& arr, int place)
 		output[count[(arr[i].getValue() / place) % 10] - 1] = arr[i];
 		output[count[(arr[i].getValue() / place) % 10] - 1].setPosition(newPosition);						
 		count[(arr[i].getValue() / place) % 10]--;
-		/*arr[i].setActive();
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));*/
 	}
 
 	// Copy the sorted elements into original array
 	for (std::size_t i = 0; i < arr.size(); i++) {
 		arr[i] = output[i];
 		arr[i].setActive();
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+		sleep(delay);
 	}
 }
 
@@ -299,9 +271,6 @@ void Sorter::radixSort(std::vector<Rectangle>& arr)
 	for (std::size_t i = 0; i < arr.size(); i++) {
 		if (arr[i].getValue() > max) {
 			max = arr[i].getValue();
-			
-			/*arr[i].setActive();
-			std::this_thread::sleep_for(std::chrono::milliseconds(delay));*/
 		}
 	}
 
@@ -311,27 +280,21 @@ void Sorter::radixSort(std::vector<Rectangle>& arr)
 	}
 }
 
-int Sorter::partition(std::vector<Rectangle>& arr, int low, int hi)
+int Sorter::partition(std::vector<Rectangle>& vec, int low, int high)
 {
-	Rectangle pivot = arr[hi];				// Select rightmost element as pivot
-	int i = (low - 1);						// Pointer for greater element
+	int pivot = high;
+	int leftWall = low - 1;
 
-	for (int j = low; j < hi; j++) {
-		if (arr[j] <= pivot) {
-			i++;
-			swap(&arr[i], &arr[j]);
-			arr[i].setActive();
-			arr[j].setActive();
-			std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+	for (int i = low; i < high; i++) {
+		if (vec[i] < vec[pivot]) {
+			leftWall++;
+			swap(vec[i], vec[leftWall], delay);
 		}
 	}
 
-	swap(&arr[i + 1], &arr[hi]);
-	arr[i + 1].setActive();
-	arr[hi].setActive();
-	std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+	swap(vec[leftWall + 1], vec[pivot], delay);
 
-	return (i + 1);
+	return leftWall + 1; 
 }
 
 void Sorter::printVector(std::vector<Rectangle>& arr)
@@ -359,25 +322,28 @@ void Sorter::heapify(std::vector<Rectangle>& arr, int n, int i)
 	
 	// Swap and continue to heapify if root is not the largest
 	if (largest != i) {
-		arr[i].setActive();
-		arr[largest].setActive();
-		swap(&arr[i], &arr[largest]);
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+		swap(arr[i], arr[largest], delay, true);
 		heapify(arr, n, largest);
 	}
 }
 
-void Sorter::swap(Rectangle* a, Rectangle* b)
+void Sorter::swap(Rectangle& a, Rectangle& b, unsigned int delay, bool setActive)
 {
-	// Switch place of a and b in array
-	Rectangle temp = *a;
-	*a = *b;
-	*b = temp;
+	Rectangle temp = a;
+	a = b;
+	b = temp;
+	
+	sf::Vector2f tempCoords = a.getPosition();
+	a.setPosition(b.getPosition());
+	b.setPosition(tempCoords);
 
-	// Swap coordinate positions of a and b
-	sf::Vector2f tempCoords = a->getPosition();
-	a->setPosition(b->getPosition());
-	b->setPosition(tempCoords);
+	if (delay)
+		sleep(delay);
+	
+	if (setActive) {
+		a.setActive();
+		b.setActive();
+	}
 }
 
 void Sorter::merge(std::vector<Rectangle>& arr, int p, int q, int r)
@@ -413,7 +379,7 @@ void Sorter::merge(std::vector<Rectangle>& arr, int p, int q, int r)
 			arr[k].setActive();
 			i++;
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+			sleep(delay);
 		}
 		else {
 			sf::Vector2f newPosition = arr[k].getPosition();
@@ -422,7 +388,7 @@ void Sorter::merge(std::vector<Rectangle>& arr, int p, int q, int r)
 			arr[k].setActive();
 			j++;
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+			sleep(delay);
 		}
 		k++;
 	}
@@ -436,7 +402,7 @@ void Sorter::merge(std::vector<Rectangle>& arr, int p, int q, int r)
 		i++;
 		k++;
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+		sleep(delay);
 	}
 	while (j < n2) {
 		sf::Vector2f newPosition = arr[k].getPosition();
@@ -446,9 +412,14 @@ void Sorter::merge(std::vector<Rectangle>& arr, int p, int q, int r)
 		j++;
 		k++;
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+		sleep(delay);
 	}
 
 	delete[] L;
 	delete[] R;
+}
+
+void Sorter::sleep(unsigned int ms)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }

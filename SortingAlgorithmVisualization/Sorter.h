@@ -18,7 +18,7 @@ class Sorter
 
 	private:
 		int algoChoice;
-		int delay;
+		unsigned int delay;
 		std::mutex mtx;
 
 		// Sorts
@@ -35,8 +35,9 @@ class Sorter
 		// Utils
 		void printVector(std::vector<Rectangle>& arr);
 		void heapify(std::vector<Rectangle>& arr, int n, int i);
-		void swap(Rectangle* a, Rectangle* b);
+		void swap(Rectangle& a, Rectangle& b, unsigned int delay = 0, bool setActive = true);
 		void merge(std::vector<Rectangle>& arr, int p, int q, int r);				
+		void sleep(unsigned int ms);
 		int partition(std::vector<Rectangle>& arr, int low, int hi);
 };
 
